@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Talent Sourcer Assessment — Plenty Search</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f1117;
+    --paper: #f7f4ef;
+    --cream: #ede9e1;
+    --teal: #0a7c6e;
+    --teal-light: #d0ede9;
+    --teal-mid: #1aab97;
+    --gold: #c9953a;
+    --muted: #6b6660;
+    --border: #d4cfc7;
+    --red: #b93030;
+    --green: #1a7a50;
+    --amber: #b97a1a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.5;
+  }
+
+  /* HERO */
+  .hero {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 80px 60px 70px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(10,124,110,0.35) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 30%;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(201,149,58,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--teal-mid);
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.1s;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(38px, 6vw, 68px);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.2s;
+  }
+
+  .hero h1 span { color: var(--teal-mid); }
+
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    margin-top: 28px;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.4s;
+  }
+
+  .hero-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .hero-meta-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(247,244,239,0.45);
+  }
+
+  .hero-meta-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(247,244,239,0.9);
+  }
+
+  .divider-line {
+    width: 60px; height: 2px;
+    background: var(--teal-mid);
+    margin: 28px 0;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.3s;
+  }
+
+  /* NAV PILLS */
+  .nav-strip {
+    background: var(--cream);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 60px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 100px;
+    text-decoration: none;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+
+  .nav-pill:hover, .nav-pill.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  /* MAIN LAYOUT */
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+
+  /* SECTION HEADERS */
+  .section-wrap {
+    padding: 64px 0 32px;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 10px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .section-desc {
+    color: var(--muted);
+    font-size: 14px;
+    max-width: 600px;
+    margin-bottom: 36px;
+    line-height: 1.7;
+  }
+
+  /* ── PART 1: CANDIDATE CARDS ── */
+  .candidate-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: box-shadow 0.3s, transform 0.3s;
+  }
+
+  .candidate-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.5s ease, transform 0.5s ease, box-shadow 0.3s, border-color 0.3s;
+  }
+
+  .candidate-card:hover {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+    border-color: var(--teal-mid);
+  }
+
+  .card-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 20px;
+    padding: 24px 28px;
+    border-bottom: 1px solid var(--border);
+    background: var(--paper);
+  }
+
+  .card-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    font-weight: 900;
+    color: var(--cream);
+    line-height: 1;
+    -webkit-text-stroke: 1.5px var(--border);
+    user-select: none;
+  }
+
+  .card-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 3px;
+  }
+
+  .card-role {
+    font-size: 13px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--teal);
+    text-decoration: none;
+    border: 1px solid var(--teal-light);
+    background: var(--teal-light);
+    padding: 7px 14px;
+    border-radius: 6px;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+
+  .card-link:hover {
+    background: var(--teal);
+    color: white;
+    border-color: var(--teal);
+  }
+
+  .card-body {
+    padding: 22px 28px;
+  }
+
+  .card-body p {
+    font-size: 14px;
+    color: #3a3630;
+    line-height: 1.75;
+  }
+
+  /* ── PART 2: RANKING TABLE ── */
+  .ranking-overview {
+    background: var(--ink);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 36px;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .ranking-overview.visible { opacity: 1; }
+
+  .ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .ranking-table thead tr {
+    background: rgba(255,255,255,0.05);
+  }
+
+  .ranking-table th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(247,244,239,0.45);
+    padding: 14px 20px;
+    text-align: left;
+    font-weight: 400;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .ranking-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: rgba(247,244,239,0.85);
+    font-size: 13.5px;
+  }
+
+  .ranking-table tr:last-child td { border-bottom: none; }
+
+  .rank-badge {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--teal-mid);
+  }
+
+  .verdict-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  .verdict-yes { background: rgba(26,122,80,0.2); color: #4ade80; }
+  .verdict-cond { background: rgba(185,122,26,0.2); color: #fbbf24; }
+  .verdict-no { background: rgba(185,48,48,0.2); color: #f87171; }
+
+  /* EVALUATION CARDS */
+  .eval-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  .eval-card.visible { opacity: 1; transform: translateY(0); }
+
+  .eval-header {
+    display: grid;
+    grid-template-columns: 52px 1fr auto;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 24px;
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .eval-rank-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--teal-mid);
+    background: rgba(26,171,151,0.12);
+    border: 1px solid rgba(26,171,151,0.3);
+    border-radius: 6px;
+    width: 36px; height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .eval-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+
+  .eval-role {
+    font-size: 12px;
+    color: rgba(247,244,239,0.5);
+    font-style: italic;
+  }
+
+  .eval-body {
+    padding: 20px 24px;
+    background: white;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .eval-section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 6px;
+  }
+
+  .eval-text {
+    font-size: 13.5px;
+    color: #3a3630;
+    line-height: 1.7;
+    grid-column: span 2;
+  }
+
+  .eval-linkedin {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--teal);
+    text-decoration: none;
+  }
+
+  .eval-linkedin:hover { text-decoration: underline; }
+
+  .eval-verdict-section { }
+
+  .eval-verdict-val {
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+
+  .verdict-text-yes { color: var(--green); }
+  .verdict-text-cond { color: var(--amber); }
+  .verdict-text-no { color: var(--red); }
+
+  /* FOOTER */
+  .footer {
+    background: var(--ink);
+    color: rgba(247,244,239,0.45);
+    padding: 40px 60px;
+    margin-top: 80px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: gap;
+    gap: 12px;
+  }
+
+  /* SCROLL REVEAL */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* TEAL ACCENT RULE */
+  .accent-rule {
+    width: 48px; height: 3px;
+    background: linear-gradient(90deg, var(--teal), var(--teal-mid));
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+
+  /* PART DIVIDER */
+  .part-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 48px 0 12px;
+  }
+
+  .part-divider-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .part-divider-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  @media (max-width: 640px) {
+    .hero { padding: 50px 24px; }
+    .container { padding: 0 20px; }
+    .nav-strip { padding: 12px 20px; }
+    .card-header { grid-template-columns: 1fr; }
+    .card-number { display: none; }
+    .eval-body { grid-template-columns: 1fr; }
+    .eval-text { grid-column: span 1; }
+    .footer { padding: 32px 24px; flex-direction: column; align-items: flex-start; }
+    .ranking-table th:nth-child(3), .ranking-table td:nth-child(3) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div style="max-width:860px; margin:0 auto; position:relative; z-index:1;">
+    <p class="hero-eyebrow">Plenty Search · Talent Sourcer Assessment</p>
+    <h1>Finding &amp; Evaluating<br><span>Exceptional Talent</span></h1>
+    <div class="divider-line"></div>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Role Applied</span>
+        <span class="hero-meta-value">Talent Sourcer</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Parts Covered</span>
+        <span class="hero-meta-value">2 of 2</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Candidates Sourced</span>
+        <span class="hero-meta-value">3 (Head of Product)</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Profiles Evaluated</span>
+        <span class="hero-meta-value">4 (Dir. Engineering)</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav-strip">
+  <a class="nav-pill active" href="#part1">Part 1 — Find</a>
+  <a class="nav-pill" href="#part2">Part 2 — Evaluate</a>
+</nav>
+
+<main>
+<div class="container">
+
+  <!-- ═══════════════ PART 1 ═══════════════ -->
+  <section id="part1" class="section-wrap">
+    <p class="section-label">Part 01</p>
+    <h2 class="section-title">Find the Best — Head of Product</h2>
+    <p class="section-desc">
+      The following three candidates were identified as strong matches for the Head of Product role.
+      Each profile was evaluated against the core JD criteria: 8+ years of product management experience,
+      B2B SaaS background, demonstrated ownership of product strategy, and a track record of scaling product teams.
+    </p>
+
+    <!-- CANDIDATE 1 -->
+    <div class="candidate-card reveal">
+      <div class="card-header">
+        <div class="card-number">01</div>
+        <div>
+          <div class="card-name">Matthew Reading</div>
+          <div class="card-role">Product Executive | AI | B2B SaaS · The Predictive Index · Portland, USA</div>
+        </div>
+        <a class="card-link" href="https://www.linkedin.com/in/matthewreading/" target="_blank">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+          View Profile
+        </a>
+      </div>
+      <div class="card-body">
+        <p>Matthew Reading is a product executive who operates at the intersection of platform strategy, GTM alignment, and AI-powered SaaS growth. He has led product functions at The Predictive Index, a B2B SaaS company focused on workforce and team performance tools, and has hands-on experience closing a $30M+ funding round while simultaneously building and executing product strategy from the ground up. His background in fast-paced startup environments, combined with a strong emphasis on data-driven roadmap decisions and cross-functional leadership, makes him a compelling and well-rounded fit for this Head of Product role.</p>
+      </div>
+    </div>
+
+    <!-- CANDIDATE 2 -->
+    <div class="candidate-card reveal">
+      <div class="card-header">
+        <div class="card-number">02</div>
+        <div>
+          <div class="card-name">Chris Cassimus</div>
+          <div class="card-role">VP of Product | B2B SaaS Leader · Swoogo &amp; Level Access · Raleigh, USA</div>
+        </div>
+        <a class="card-link" href="https://www.linkedin.com/in/chrisgcassimus/" target="_blank">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+          View Profile
+        </a>
+      </div>
+      <div class="card-body">
+        <p>Chris Cassimus has held VP of Product and Head of Product roles across multiple growing B2B SaaS companies including Swoogo, Gesture, and Level Access. His career demonstrates a consistent pattern of owning the full product function at startup and scale-up stage companies, working closely with engineering and GTM teams to ship product that drives revenue. He is US-based in Raleigh, NC, and his experience across event tech, accessibility SaaS, and data platforms shows strong versatility in leading product strategy in niche but fast-growing B2B markets.</p>
+      </div>
+    </div>
+
+    <!-- CANDIDATE 3 -->
+    <div class="candidate-card reveal">
+      <div class="card-header">
+        <div class="card-number">03</div>
+        <div>
+          <div class="card-name">Brian Kempf</div>
+          <div class="card-role">Senior Product Manager · CloudFactory (AI Data Labelling SaaS) · Raleigh, USA</div>
+        </div>
+        <a class="card-link" href="https://www.linkedin.com/in/kempfbrian/" target="_blank">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+          View Profile
+        </a>
+      </div>
+      <div class="card-body">
+        <p>Brian Kempf brings a strong B2B SaaS product background with a direct connection to AI, currently working at CloudFactory, a company that provides AI training data and workforce solutions to enterprise clients. His prior experience at Red Hat and ChannelAdvisor demonstrates a track record across both open-source enterprise software and e-commerce SaaS platforms. He is based in Raleigh, NC, and his blend of technical understanding, product-market fit experience, and AI-adjacent domain knowledge positions him as a strong candidate to lead product at an AI-powered knowledge worker tool.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ PART 2 ═══════════════ -->
+  <div class="part-divider">
+    <div class="part-divider-line"></div>
+    <span class="part-divider-label">Part Two</span>
+    <div class="part-divider-line"></div>
+  </div>
+
+  <section id="part2" class="section-wrap" style="padding-top:20px;">
+    <p class="section-label">Part 02</p>
+    <h2 class="section-title">Evaluate &amp; Justify — Director of Engineering</h2>
+    <p class="section-desc">
+      Four LinkedIn profiles reviewed against the Director of Engineering JD. Rankings reflect overall alignment from strongest to least, based on team scale, technical depth, SaaS background, and leadership scope.
+    </p>
+
+    <!-- RANKING SUMMARY TABLE -->
+    <div class="ranking-overview reveal">
+      <table class="ranking-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Candidate</th>
+            <th>Current Role</th>
+            <th>Decision</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="rank-badge">#1</span></td>
+            <td style="font-weight:600;">Bin Shen</td>
+            <td style="color:rgba(247,244,239,0.55); font-size:13px;">Engineering Director (AI/ML), Celonis</td>
+            <td><span class="verdict-badge verdict-yes">✓ Move Forward</span></td>
+          </tr>
+          <tr>
+            <td><span class="rank-badge">#2</span></td>
+            <td style="font-weight:600;">Raghav R.</td>
+            <td style="color:rgba(247,244,239,0.55); font-size:13px;">Engineering Manager, DoorDash</td>
+            <td><span class="verdict-badge verdict-yes">✓ Move Forward</span></td>
+          </tr>
+          <tr>
+            <td><span class="rank-badge">#3</span></td>
+            <td style="font-weight:600;">Mauricio Carvalho</td>
+            <td style="color:rgba(247,244,239,0.55); font-size:13px;">Director of Engineering, Nomad</td>
+            <td><span class="verdict-badge verdict-cond">~ Conditional</span></td>
+          </tr>
+          <tr>
+            <td><span class="rank-badge">#4</span></td>
+            <td style="font-weight:600;">AJ Gulati</td>
+            <td style="color:rgba(247,244,239,0.55); font-size:13px;">Director of Engineering, VerticalScope</td>
+            <td><span class="verdict-badge verdict-no">✗ Not Now</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- EVAL 1 -->
+    <div class="eval-card reveal">
+      <div class="eval-header">
+        <div class="eval-rank-num">#1</div>
+        <div>
+          <div class="eval-name">Bin Shen</div>
+          <div class="eval-role">Engineering Director (AI/ML) &amp; Bay Area Site Lead, Celonis · Former Pinterest, Google</div>
+        </div>
+        <span class="verdict-badge verdict-yes">✓ Move Forward</span>
+      </div>
+      <div class="eval-body">
+        <div>
+          <div class="eval-section-label">LinkedIn</div>
+          <a class="eval-linkedin" href="https://www.linkedin.com/in/binshen/" target="_blank">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+            linkedin.com/in/binshen
+          </a>
+        </div>
+        <div class="eval-verdict-section">
+          <div class="eval-section-label">Verdict</div>
+          <div class="eval-verdict-val verdict-text-yes">Yes — Strong move forward</div>
+        </div>
+        <p class="eval-text">Bin Shen is the standout candidate. He holds a Ph.D. in Computer Science from Purdue University and has built a career combining deep technical expertise with engineering leadership at scale. At Celonis, a top-tier enterprise SaaS company, he oversees AI/ML engineering teams as Engineering Director, and previously held senior roles at Pinterest's Advanced Technology Group and Google across YouTube and Research. His technical depth in AI/ML, architecture, and infrastructure directly matches the JD requirement for a Director who can serve as a genuine technical partner. He also leads the Bay Area office, demonstrating cross-functional and site leadership. Of all four candidates, Bin Shen is the clearest match for this role.</p>
+      </div>
+    </div>
+
+    <!-- EVAL 2 -->
+    <div class="eval-card reveal">
+      <div class="eval-header">
+        <div class="eval-rank-num">#2</div>
+        <div>
+          <div class="eval-name">Raghav R.</div>
+          <div class="eval-role">Engineering Manager, DoorDash · Former Ambient.ai, Twitter · Stanford MS</div>
+        </div>
+        <span class="verdict-badge verdict-yes">✓ Move Forward</span>
+      </div>
+      <div class="eval-body">
+        <div>
+          <div class="eval-section-label">LinkedIn</div>
+          <a class="eval-linkedin" href="https://www.linkedin.com/in/raghavramesh/" target="_blank">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+            linkedin.com/in/raghavramesh
+          </a>
+        </div>
+        <div class="eval-verdict-section">
+          <div class="eval-section-label">Verdict</div>
+          <div class="eval-verdict-val verdict-text-yes">Yes — Move forward</div>
+        </div>
+        <p class="eval-text">Raghav R. is a strong engineering leader with an MS from Stanford in AI and Operations Research, and deep experience in high-scale systems. At DoorDash, he led engineering teams building real-time logistics and ML platforms with multi-squad delivery ownership. He has spoken publicly at major engineering conferences including QCon and O'Reilly AI, demonstrating the communication skills that matter at Director level. While his current title is Engineering Manager, the scope and complexity of his work clearly reflects Director-level ownership, and this role could be the right step up for him.</p>
+      </div>
+    </div>
+
+    <!-- EVAL 3 -->
+    <div class="eval-card reveal">
+      <div class="eval-header">
+        <div class="eval-rank-num">#3</div>
+        <div>
+          <div class="eval-name">Mauricio Carvalho</div>
+          <div class="eval-role">Director of Engineering, Nomad (Fintech) · Former Founder &amp; CTO, Husky</div>
+        </div>
+        <span class="verdict-badge verdict-cond">~ Conditional</span>
+      </div>
+      <div class="eval-body">
+        <div>
+          <div class="eval-section-label">LinkedIn</div>
+          <a class="eval-linkedin" href="https://www.linkedin.com/in/mauricio-carvalho/" target="_blank">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+            linkedin.com/in/mauricio-carvalho
+          </a>
+        </div>
+        <div class="eval-verdict-section">
+          <div class="eval-section-label">Verdict</div>
+          <div class="eval-verdict-val verdict-text-cond">Conditional — Recommend proceeding with clarifying questions</div>
+        </div>
+        <p class="eval-text">Mauricio Carvalho brings a compelling entrepreneurial angle: he co-founded and served as CTO of Husky (an international payments fintech), which was later acquired by Nomad, where he now serves as Director of Engineering. This founder-to-operator trajectory signals a strong ownership mindset. However, there are areas worth exploring: Nomad is a fintech startup rather than a pure SaaS company, and it is unclear whether he has directly led teams of 10 or more engineers across multiple squads. His technical stack is primarily backend and fintech infrastructure rather than AI/ML. He also appears to be Brazil-based, which may conflict with the North America location requirement. Recommended to proceed conditionally, subject to clarification on team size and location.</p>
+      </div>
+    </div>
+
+    <!-- EVAL 4 -->
+    <div class="eval-card reveal">
+      <div class="eval-header">
+        <div class="eval-rank-num">#4</div>
+        <div>
+          <div class="eval-name">AJ Gulati</div>
+          <div class="eval-role">Director of Engineering, VerticalScope · Former SalonScale</div>
+        </div>
+        <span class="verdict-badge verdict-no">✗ Not Recommended</span>
+      </div>
+      <div class="eval-body">
+        <div>
+          <div class="eval-section-label">LinkedIn</div>
+          <a class="eval-linkedin" href="https://www.linkedin.com/in/aj-gulati-27281126/" target="_blank">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+            linkedin.com/in/aj-gulati-27281126
+          </a>
+        </div>
+        <div class="eval-verdict-section">
+          <div class="eval-section-label">Verdict</div>
+          <div class="eval-verdict-val verdict-text-no">No — Not recommended at this time</div>
+        </div>
+        <p class="eval-text">AJ Gulati holds the Director of Engineering title at both VerticalScope and previously SalonScale, so the seniority level is nominally a match. However, the scale and complexity of his experience appear limited compared to the other candidates. VerticalScope operates a community media platform, a very different technical environment from AI-powered B2B SaaS, and SalonScale is a small-scale vertical SaaS tool. There is limited evidence of managing teams of 10 or more engineers, leading cross-functional squads, or owning architecture and infrastructure decisions at scale.</p>
+      </div>
+    </div>
+
+  </section>
+</div>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <span>Plenty Search · Talent Sourcer Assessment</span>
+  <span style="color:rgba(247,244,239,0.25);">All evaluations based on publicly available LinkedIn data</span>
+</footer>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Active nav pill
+  const sections = document.querySelectorAll('section[id]');
+  const pills = document.querySelectorAll('.nav-pill');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 120) current = s.id;
+    });
+    pills.forEach(p => {
+      p.classList.toggle('active', p.getAttribute('href') === '#' + current);
+    });
+  });
+</script>
+</body>
+</html>
